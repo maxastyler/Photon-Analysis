@@ -23,9 +23,8 @@ def process_counts_with_byteflipped_mask(counts_file_name: str,
 
 if __name__ == '__main__':
     start = time()
-    mask = import_dark_counts_to_byteflipped_mask('./bin1.mat', 1)
-    mat = scipy.io.loadmat('./bin1.mat')['c']
-    processed = process_counts_with_byteflipped_mask("./spc_dark21.bin", mask)
+    mask = import_dark_counts_to_byteflipped_mask('/home/max/Documents/matlab_bytes_decoding/bin1.mat', 1)
+    processed = process_counts_with_byteflipped_mask("/home/max/Documents/matlab_bytes_decoding/spc_dark21.bin", mask)
     print(processed.shape)
     processed = processed[processed.sum(axis=1)==2, :]
     processed = np.flip(processed.reshape(processed.shape[0], 76800//8, 8), axis=2).reshape(processed.shape[0], 240, 320)
