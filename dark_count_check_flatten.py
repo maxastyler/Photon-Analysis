@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from time import time
 import scipy.io
-
+import os
 
 def import_dark_counts_to_byteflipped_mask(dark_counts_name: str,
                                            threshold: int):
