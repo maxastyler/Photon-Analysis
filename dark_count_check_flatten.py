@@ -20,27 +20,27 @@ def process_counts_with_byteflipped_mask(counts_file_name: str,
                                          byteflipped_mask):
     counts_mat = np.fromfile(counts_file_name, dtype=np.uint8)[3:]
     counts_mat &= np.repeat(byteflipped_mask, 10000)
-    print(counts_mat.shape, counts_mat.dtype)
     counts_mat = np.unpackbits(counts_mat, axis=0)
     return counts_mat.reshape(10000, 320*240, order='C')
-    # return (np.unpackbits(np.fromfile(counts_file_name, dtype=np.uint8)[3:] & np.repeat(
-    #     byteflipped_mask, 10000
-    # ))).reshape(10000, 320*240, order='C')
 
 def find_bins_in_folder(folder_name: str, file_prefix: str = "spc_data"):
     return list(map(str, Path(folder_name).glob("{}*.bin".format(file_prefix))))
 
 
 if __name__ == '__main__':
-    start = time()
-    mask = import_dark_counts_to_byteflipped_mask(
-        '../2018_9_6_17_19_2/p.mat', 1)
-    print(find_bins_in_folder("../2018_9_6_17_19_2")[0])
-    processed = process_counts_with_byteflipped_mask(
-        find_bins_in_folder("../2018_9_6_17_19_2")[0], mask)
-    print(processed.shape)
-    processed = processed[processed.sum(axis=1) > 1, :]
-    processed = np.flip(processed.reshape(processed.shape[0], 76800//8, 8),
-                        axis=2).reshape(processed.shape[0], 240, 320)
-    print(np.argwhere(processed != 0))
-    print(time()-start)
+    coords = []
+    file_names = find_bins_in_folder("../2018_9_6_17_19_2")[0:10]
+    number_of_files = len(file_names)
+    last_time = time()
+    for iteration, file_name in enumerate(file_names):
+        mask = import_dark_counts_to_byteflipped_mask(
+            '../2018_9_6_17_19_2/p.mat', 20)
+        processed = process_counts_with_byteflipped_mask(file_name, mask)
+        processed = processed[processed.sum(axis=1) > 1, :]
+        processed = np.flip(processed.reshape(processed.shape[0], 76800//8, 8),
+                            axis=2).reshape(processed.shape[0], 240, 320)
+        coords.append(np.argwhere(processed != 0))
+        new_time = time()
+        print("Done {}/{}\tIteration time: {:.3f}".format(iteration+1, number_of_files, new_time-last_time))
+        last_time = new_time
+    print(coords)
