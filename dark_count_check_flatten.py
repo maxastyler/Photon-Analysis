@@ -18,9 +18,14 @@ def load_counts_bin(counts_bin_name: str):
 
 def process_counts_with_byteflipped_mask(counts_file_name: str,
                                          byteflipped_mask):
-    return (np.unpackbits(np.fromfile(counts_file_name, dtype=np.uint8)[3:] & np.repeat(
-        byteflipped_mask, 10000
-    ))).reshape(10000, 320*240, order='C')
+    counts_mat = np.fromfile(counts_file_name, dtype=np.uint8)[3:]
+    counts_mat &= np.repeat(byteflipped_mask, 10000)
+    print(counts_mat.shape, counts_mat.dtype)
+    counts_mat = np.unpackbits(counts_mat, axis=0)
+    return counts_mat.reshape(10000, 320*240, order='C')
+    # return (np.unpackbits(np.fromfile(counts_file_name, dtype=np.uint8)[3:] & np.repeat(
+    #     byteflipped_mask, 10000
+    # ))).reshape(10000, 320*240, order='C')
 
 def find_bins_in_folder(folder_name: str, file_prefix: str = "spc_data"):
     return list(map(str, Path(folder_name).glob("{}*.bin".format(file_prefix))))
