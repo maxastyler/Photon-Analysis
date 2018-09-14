@@ -1,3 +1,8 @@
+# COINCIDENCE MATRIX IS A uint8 AT THE MOMENT
+# CHANGE IF THERE MIGHT BE MORE THAN 255 COINCIDENCES
+# BETWEEN TWO PIXELS
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -36,11 +41,10 @@ def find_two_point_coincidences(masked_frames):
 
 if __name__ == '__main__':
     coords = []
-    # file_names = find_bins_in_folder("../2018_9_6_17_19_2")[0:10]
-    file_names = ["./spc_data1.bin"]
+    file_names = find_bins_in_folder("../2018_9_6_17_19_2")
     number_of_files = len(file_names)
     last_time = time()
-    mask = import_dark_counts_to_byteflipped_mask('./p.mat', 1000)
+    mask = import_dark_counts_to_byteflipped_mask('../2018_9_6_17_19_2/p.mat', 2000)
     frame_size = reduce(lambda x, y: x*y, mask.shape, 1)*8
     for iteration, file_name in enumerate(file_names):
         processed = process_counts_with_byteflipped_mask(file_name, mask)
@@ -51,10 +55,10 @@ if __name__ == '__main__':
                                                           number_of_files,
                                                           new_time-last_time))
         last_time = new_time
-    print(coords)
+    np.savez_compressed("./coincidence_coordinates", np.array(coords))
     coincidence_matrix = np.zeros([frame_size, frame_size], dtype=np.uint8)
     for frame in coords:
         coincidence_matrix[
             tuple(frame[:, 1].reshape(2, frame.shape[0]//2))
         ] += 1
-    np.savez_compressed('/tmp/test_mat.npz', coincidence_matrix)
+    # np.savez_compressed('./coincidence_matrix.npz', coincidence_matrix)
