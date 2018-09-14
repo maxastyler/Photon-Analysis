@@ -36,7 +36,7 @@ if __name__ == '__main__':
     full_image = np.zeros(320*240)
     last_time = time()
     mask = import_dark_counts_to_byteflipped_mask(
-        './p.mat', 1000000)
+        './p.mat', 1000)
     for iteration, file_name in enumerate(file_names):
         processed = process_counts_with_byteflipped_mask(file_name, mask)
         full_image += processed.sum(axis=0)
