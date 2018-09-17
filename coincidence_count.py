@@ -20,12 +20,13 @@ def load_mask(mask_location: str, threshold: int, crop=None):
     # If the mask need to be cropped to a smaller frame,
     # use crop = [(row_min, col_min), (n_rows, n_cols)]
     if crop is None:
-        mat_arr = scipy.io.loadmat(mask_location)['c'].flatten('F')
+        mat_arr = scipy.io.loadmat(mask_location)['c']
     else:
         mat_arr = scipy.io.loadmat(mask_location)['c'][
             crop[0][0]:crop[0][0]+crop[1][0],
-            crop[0][1]:crop[0][1]+crop[1][1]].flatten('F')
-    return (mat_arr < threshold)
+            crop[0][1]:crop[0][1]+crop[1][1]]
+    return (mat_arr.flatten('F') < threshold)
+
 
 def load_counts_bin(counts_location: str, frame_dim, crop=None):
     # Loads a binary file stored from the camera.
@@ -43,6 +44,13 @@ def load_counts_bin(counts_location: str, frame_dim, crop=None):
         ].reshape((-1, crop[1][0]*crop[1][1]))
     else:
         return bits.reshape((-1, frame_dim[0]*frame_dim[1]))
+
+
+def find_bins_in_folder(folder_name: str, file_prefix: str = "spc_data"):
+    return list(map(str, Path(folder_name).glob(
+        "{}*.bin".format(file_prefix)
+    )))
+
 
 if __name__ == '__main__':
     crop = ((20, 20), (30, 30))
