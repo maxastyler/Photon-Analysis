@@ -53,7 +53,8 @@ def find_bins_in_folder(folder_name: str, file_prefix: str = "spc_data"):
 
 
 if __name__ == '__main__':
-    crop = ((20, 20), (30, 30))
+    t = time()
+    crop = ((1, 1), (100, 100))
     mask = load_mask("./p.mat", 1000, crop)
     coords = []
     counts = load_counts_bin("./spc_data1.bin", (320, 240), crop)
@@ -61,3 +62,4 @@ if __name__ == '__main__':
     filtered = masked[masked.sum(axis=1) == 2, :]
     coords.append(np.argwhere(filtered != 0))
     print(coords)
+    print(time()-t)
