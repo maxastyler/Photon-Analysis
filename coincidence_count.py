@@ -8,11 +8,12 @@
 
 import numpy as np
 import scipy.io
+import matplotlib.pyplot as plt
 
 from time import time
 from pathlib import Path
-from functools import reduce
-
+from functools import reduce, partial
+from multiprocessing import Pool
 
 def load_mask(mask_location: str, threshold: int, crop=None):
     # Loads a mask in matlab format from the file at mask_location
@@ -51,15 +52,44 @@ def find_bins_in_folder(folder_name: str, file_prefix: str = "spc_data"):
         "{}*.bin".format(file_prefix)
     )))
 
-
-if __name__ == '__main__':
-    t = time()
-    crop = ((1, 1), (100, 100))
-    mask = load_mask("./p.mat", 1000, crop)
-    coords = []
-    counts = load_counts_bin("./spc_data1.bin", (320, 240), crop)
+def process_file(mask, crop, file_name):
+    counts = load_counts_bin(file_name, (320, 240), crop)
     masked = mask & counts
     filtered = masked[masked.sum(axis=1) == 2, :]
-    coords.append(np.argwhere(filtered != 0))
-    print(coords)
-    print(time()-t)
+    return np.argwhere(filtered != 0)
+
+def process_file_timed(mask, crop, number_of_files, iter_file_tup):
+    iteration = iter_file_tup[0]
+    file_name = iter_file_tup[1]
+    start_time = time()
+    coords = process_file(mask, crop, file_name)
+    print("Done {}/{}\tIteration time: {:.3f}".format(iteration+1,
+                                                      number_of_files,
+                                                      time()-start_time))
+    return coords
+
+if __name__ == '__main__':
+    coords = []
+    crop = ((170, 60), (104, 104))
+    files = find_bins_in_folder("../2018_9_6_17_19_2")
+    number_of_files = len(files)
+    mask = load_mask("../2018_9_6_17_19_2/p.mat", 1000, crop)
+    last_time = time()
+    counts_image = np.zeros((crop[1]))
+    with Pool(6) as p:
+        processor = partial(process_file_timed, mask, crop, number_of_files)
+        p.map(processor, enumerate(files[:]))
+#    for iteration, file_name in enumerate(files[:2]):
+#        counts = load_counts_bin(file_name, (320, 240), crop)
+#        masked = mask & counts
+#        filtered = masked[masked.sum(axis=1) == 2, :]
+#        coords.append(np.argwhere(filtered != 0))
+#        counts_image += masked.sum(axis=0).reshape(counts_image.shape, order='F')
+#        new_time = time()
+#        print("Done {}/{}\tIteration time: {:.3f}".format(iteration+1,
+#                                                          number_of_files,
+#                                                          new_time-last_time))
+#        last_time = new_time
+#    print(coords)
+#    plt.imshow(counts_image)
+#    plt.show()
